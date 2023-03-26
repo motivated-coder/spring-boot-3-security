@@ -1,0 +1,24 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/student
+#    url: jdbc:h2:mem:testdb
+    username: skd
+    password: password
+    driver-class-name: org.postgresql.Driver
+#    driver-class-name: org.h2.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+#    database-platform: org.hibernate.dialect.H2Dialect
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+
+#  security:
+#    user:
+#      name: skd
+#      password: password
+server:
+  port: 8083
+
+
+
