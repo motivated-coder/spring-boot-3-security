@@ -1,7 +1,9 @@
 package com.skd.controller;
 
+import com.skd.dto.AuthenticateRequest;
 import com.skd.entity.Student;
 import com.skd.repository.StudentRepository;
+import com.skd.service.JwtService;
 import com.skd.service.StudentService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +11,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -22,7 +28,8 @@ import java.util.List;
 public class StudentController {
 
     private final StudentService studentService;
-    private final StudentRepository studentRepository;
+    private final JwtService jwtService;
+    private final AuthenticationManager authenticationManager;
 
     @PostConstruct
     public void initialize(){
@@ -45,6 +52,11 @@ public class StudentController {
 
     @GetMapping("/welcome")
     public ResponseEntity<String> welcome(){
+        AuthenticateRequest authenticateRequest = new AuthenticateRequest();
+        authenticateRequest.setUsername("shiva");
+        authenticateRequest.setPassword("pass");
+        log.info("Generated JWT Token is {}",authenticateRequest(authenticateRequest));
+
         return new ResponseEntity<>("Welcome Students", HttpStatus.OK);
     }
 
@@ -68,5 +80,14 @@ public class StudentController {
     public ResponseEntity<Student> saveStudent(@RequestBody Student student){
         Student s = studentService.save(student);
         return new ResponseEntity<>(s, HttpStatus.CREATED);
+    }
+
+    @PostMapping("/authenticate")
+    public String authenticateRequest(@RequestBody AuthenticateRequest authenticateRequest){
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authenticateRequest.getUsername(), authenticateRequest.getPassword()));
+        if(authentication.isAuthenticated())
+        return jwtService.generateToken(authenticateRequest.getUsername());
+        else
+        throw new UsernameNotFoundException("User doesn't exist");
     }
 }
